@@ -1,0 +1,20 @@
+import boto3
+from uuid import uuid4
+
+import os
+
+table = os.environ['DYNAMO_TABLE']
+
+def lambda_handler(event, context):
+  s3 = boto3.client("s3")
+  dynamodb = boto3.resource('dynamodb')
+  for record in event["Records"]:
+    bucket_name = record['s3']['bucket']['name']
+    object_key = record['s3']['object']['key']
+    size = record['s3']['object'].get('size', -1)
+    event_name = record['eventName']
+    event_time = record['eventTime']
+    dynamoTable = dynamodb.Table('mydynamoDBExam')
+    dynamoTable.put_item(
+      Item = { 'ID': str(uuid4()), 'Bucket': bucket_name, 'Object': object_key, 'Size': size, 'Event': event_name, 'EventTime': event_time}
+    )
